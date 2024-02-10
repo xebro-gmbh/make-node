@@ -1,0 +1,30 @@
+services:
+  node:
+    build:
+      context: ${XEBRO_ROOT_DIR}/docker/node/
+      dockerfile: Dockerfile
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.node-tls.entrypoints: websecure
+      traefik.http.routers.node-tls.rule: Host(`web.dev.local`) && PathPrefix(`/`)
+      traefik.http.routers.node-tls.tls: "true"
+      
+      traefik.http.routers.node.entrypoints: web
+      traefik.http.routers.node.rule: Host(`web.dev.local`) && PathPrefix(`/`)
+
+    volumes:
+      - ${XEBRO_ROOT_DIR}/${NODE_SRC}:/var/www/html/:rw
+    working_dir: /var/www/html
+    environment:
+      USER_UID: ${USER_UID}
+      USER_GID: ${USER_GID}
+    env_file:
+      - ${XEBRO_ROOT_DIR}/.env
+      - ${XEBRO_ROOT_DIR}/.env.local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  default:
+    external: true
+    name: ${XEBRO_PROJECT_NAME}
