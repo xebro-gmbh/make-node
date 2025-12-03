@@ -47,11 +47,14 @@ node.gitignore:
 node.docker.build: ## Build docker container
 	@${DOCKER_COMPOSE} build node --no-cache
 
+node.dockerignore: ## Add docker ignore config
+	$(call ensure_lines,"./config/.dockerignore","${NODE_DIR}.dockerignore")
+
 node.docker.stop: ## Stop the node container
 	@${DOCKER_COMPOSE} down node
 
 .gitignore: node.gitignore
 help: node.help
 init: node.init
-install: node.install node.gitignore
+install: node.install node.gitignore node.dockerignore
 restart: node.restart
