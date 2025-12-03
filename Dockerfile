@@ -10,7 +10,7 @@ RUN apt-get update -q && \
     apt-get autoremove -y && \
     apt-get clean -y
 
-COPY ./etc/entrypoint.sh /docker-entrypoint.d/entrypoint.sh
+COPY ./config/entrypoint.sh /docker-entrypoint.d/entrypoint.sh
 RUN chmod +x /docker-entrypoint.d/entrypoint.sh
 RUN echo "%sudo ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 

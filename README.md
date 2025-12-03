@@ -1,49 +1,41 @@
-# node
+# Node Bundle
 
-This docker image is for locale development and **NOT FOR PRODUCTION** usage.
+The Node bundle provides a Dockerised frontend runtime that executes whatever toolchain your project defines in its `package.json`. It is part of the public `docker/` distribution and **depends on** `docker/core` to expose its Make targets.
 
-You have been warned, because the priorities are different i will use comfort over security, size or best practices for
-production.
+## Core Principles
 
-For example:
+- **Development only** – The image trades security and size for convenience (sudo access, editors, caches kept on disk). Do not deploy it to production.
+- **Attach to the core** – Targets such as `node.install` and `node.bash` are exposed through the root `Makefile` once `docker/core` is in place.
+- **Work inside the container** – Daily commands (`npm install`, `npm run dev`, etc.) are executed via `make` so that your CI/CD pipelines can reuse the same workflow.
 
-- I added sudo without a password to the container
-- I added the user to the `sudo` group
-- I added `vim` (because i like it)
-- I didn't remove the apt/list.d directory
+## Installation & Usage
 
-Those are all the small things that make my life easier as a developer, but scares me as an admin.
+1. Install the core bundle (see `docker/core/README.md`) and ensure your root `Makefile` points to it.
+2. From the project root run:
+   ```bash
+   make node.install   # ensure env vars and gitignore snippets
+   make node.init      # run npm install inside the container
+   make start          # starts the shared Compose stack (Node exposes port 3000)
+   ```
+3. Open `http://localhost:3000` to access whatever dev server your project exposes via `npm run dev`.
 
-## Quick start
+You can inspect the service with `make node.logs` or drop into the container via `make node.bash`.
 
-On the first run you need to execute
+## Key Targets
 
-```bash
-make install
-```
+- `node.install` – Add bundle-specific environment variables and `.gitignore` entries through the core helpers.
+- `node.init` – Run `npm install` inside the container to populate `node_modules`.
+- `node.run TARGET=<script>` – Execute an arbitrary npm script (`make node.run TARGET=test`).
+- `node.build` – Run `npm run build` in the container.
+- `node.clean` – Remove caches (`.npm`, `.cache`, `node_modules`) from the mounted working tree.
+- `node.logs`, `node.restart`, `node.docker.build` – Operational helpers for the Compose service.
 
-After all config is initialized you can start all docker container.
+The Docker service simply runs `npm run dev --host 0.0.0.0`, so whatever dev server script you define in your root `package.json` is what will execute inside the container. Because every command flows through `docker/core`, you can always list the available ones with `make help`.
 
-```bash
-make start
-```
+## License
 
-Open [http://localhost:8000]
+This make bundle is provided under the MIT License. See the [LICENSE](./LICENSE) file for details.
 
-This will start all docker container defined in the `docker-compose.yaml` files in the
-module directories.
+Part of the [make-core](https://github.com/xebro-gmbh/make-core) system.
 
-## Dependencies
-
-The `docker` and `core` modules are required for this to work properly.
-
-## Concept
-
-The main idea of those docker containers is to open the bash inside the container and do the default work
-inside this container.
-
-Organizing and doing install/create or build docker images, I will create make targets for, so using
-them in a ci/cd environment should require you only calling them with the possibility to fine tune steps, without
-the need for operations to take action.
-
-### So please don't use this image for production.
+Copyright (c) 2025 xebro GmbH

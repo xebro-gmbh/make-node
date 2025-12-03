@@ -33,7 +33,7 @@ node.update: ## update all npm packages
 
 node.install: ## install all environment variables and create folders
 	$(call headline,"Installing node")
-	$(call ensure_env_vars,".env","${NODE_DIR}.env")
+	$(call ensure_env_vars,".env","${NODE_DIR}config/.env")
 
 node.init: ## install all npm packages
 	@${NODE_RUN} npm install
@@ -42,7 +42,7 @@ node.help:
 	$(call add_help, ${NODE_DIR}Makefile,${NODE})
 
 node.gitignore:
-	$(call ensure_lines,".gitignore","${NODE_DIR}.gitignore")
+	$(call ensure_lines,".gitignore","${NODE_DIR}config/.gitignore")
 
 node.docker.build: ## Build docker container
 	@${DOCKER_COMPOSE} build node --no-cache

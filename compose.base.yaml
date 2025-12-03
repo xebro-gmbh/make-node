@@ -11,9 +11,6 @@ services:
     environment:
       USER_UID: ${USER_UID}
       USER_GID: ${USER_GID}
-    depends_on:
-      php:
-        condition: service_healthy
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]

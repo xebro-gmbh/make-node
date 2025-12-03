@@ -1,0 +1,5 @@
+services:
+  node:
+    depends_on:
+      php:
+        condition: service_healthy

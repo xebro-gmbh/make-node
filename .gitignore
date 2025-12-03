@@ -1,4 +1,2 @@
-/.cache/
-node_modules/
-/.npm/
-/public/build/
+# exclude the generated compose.yaml, the config to copy is located in ./config/.gitignore
+compose.yaml
