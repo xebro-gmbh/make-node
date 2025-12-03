@@ -1,57 +1,60 @@
 #--------------------------
-# xebro GmbH - node - 0.0.1
+# xebro GmbH - node - 1.0.1
 #--------------------------
 
-.PHONY: node.help node.docker-ignore
+.PHONY: node.help node.dockerignore
+NODE_RUN = ${DOCKER_COMPOSE} run --rm node
 
+NODE_DIR := $(patsubst $(XO_ROOT_DIR)/%,./%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+NODE_DIR_ABS := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
+NODE := $(notdir $(patsubst %/,%,$(NODE_DIR)))
 
 node.clean: ## remove untracked files like "node_modules" and ".npm" cache
-	rm -rf .npm/
-	rm -rf .cache/
-	rm -rf node_modules
-
-node.docker-build: ## Build node container
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} build node
-
+	${NODE_RUN} rm -rf .npm/ .cache/ node_modules/
 
 node.bash: ## Open bash inside the container
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} run --rm node bash
+	${NODE_RUN} bash
 
 node.build: ## run npm target "build"
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} run --rm node npm run build
+	${NODE_RUN} npm run build
 
 node.run: ## run npm target "docker"
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} run --rm node npm run $TARGET
+	@${NODE_RUN} npm run $$TARGET
 
-node.stop: ## stop docker container
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} stop node
+node.restart: ## restart docker container
+	@${DOCKER_COMPOSE} restart node --no-deps
 
 node.logs: ## show logs for node container
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} logs -f node
+	@${DOCKER_COMPOSE} logs -f node
 
 node.update: ## update all npm packages
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} run --rm node npm upgrade
+	@${NODE_RUN} npm upgrade
 
 node.install: ## install all environment variables and create folders
 	$(call headline,"Installing node")
-	$(call add_config,".env","docker/node/.env")
-	@mkdir -p public/
+	$(call ensure_env_vars,".env","${NODE_DIR}.env")
 
 node.init: ## install all npm packages
-	@${DOCKER_COMPOSE} ${DOCKER_FILES} run --rm node npm install
+	@${NODE_RUN} npm install
 
 node.help:
-	$(call add_help, ./docker/node/Makefile,"node")
-
-node.dockerignore:
-	@touch .dockerignore
-	$(call add_config,".dockerignore","docker/node/.dockerignore")
+	$(call add_help, ${NODE_DIR}Makefile,${NODE})
 
 node.gitignore:
-	$(call add_config,".gitignore","docker/node/.gitignore")
+	$(call ensure_lines,".gitignore","${NODE_DIR}.gitignore")
 
-help: node.help
+node.interfaces:
+	@${NODE_RUN} npm init -y @api-platform/client http://php/api app/lib/api/ -- --generator typescript
 
-.dockerignore: node.dockerignore
+node.docker.build: ## Build docker container
+	@${DOCKER_COMPOSE} build node --no-cache
+
+node.docker.stop: ## Build docker container (DEV)
+	@${DOCKER_COMPOSE} down node
+
 .gitignore: node.gitignore
-install: node.install node.docker-ignore node.gitignore node.docker-build
+help: node.help
+init: node.init
+install: node.install node.gitignore
+restart: node.restart
