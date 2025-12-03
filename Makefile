@@ -44,13 +44,10 @@ node.help:
 node.gitignore:
 	$(call ensure_lines,".gitignore","${NODE_DIR}.gitignore")
 
-node.interfaces:
-	@${NODE_RUN} npm init -y @api-platform/client http://php/api app/lib/api/ -- --generator typescript
-
 node.docker.build: ## Build docker container
 	@${DOCKER_COMPOSE} build node --no-cache
 
-node.docker.stop: ## Build docker container (DEV)
+node.docker.stop: ## Stop the node container
 	@${DOCKER_COMPOSE} down node
 
 .gitignore: node.gitignore
